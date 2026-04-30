@@ -1,0 +1,30 @@
+### @prod
+### Environment File: ./rest-client.env
+
+###
+# Search Courses
+GET https://8jv26p206e.execute-api.us-west-2.amazonaws.com/prod/ghin/courses?search=bear%20creek%20country HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+X-Api-Key: {{$dotenv APIKEY}}
+
+###
+# Get Course Details
+GET https://8jv26p206e.execute-api.us-west-2.amazonaws.com/prod/ghin/courses/1526 HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+X-Api-Key: {{$dotenv APIKEY}}
+
+###
+# Get Golfer Handicaps
+GET https://8jv26p206e.execute-api.us-west-2.amazonaws.com/prod/ghin/golfers/50155/handicaps?course-id=1526 HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+X-Api-Key: {{$dotenv APIKEY}}
+
+###
+# Get Golfer
+GET https://8jv26p206e.execute-api.us-west-2.amazonaws.com/prod/ghin/golfers/50155 HTTP/1.1
+Content-Type: application/json
+Accept: application/json
+X-Api-Key: {{$dotenv APIKEY}}

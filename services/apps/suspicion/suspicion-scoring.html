@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Suspicion Scoring Reference</title>
+  <style>
+    :root {
+      --ink: #1f2226;
+      --muted: #5f6972;
+      --bg: #f4f6f3;
+      --panel: #ffffff;
+      --line: #d5dcd4;
+      --accent: #1b6a47;
+      --accent-soft: #e4f2ea;
+      --warn: #9a3f12;
+      --warn-soft: #fce9df;
+      --shadow: 0 8px 24px rgba(24, 40, 32, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Avenir Next", "Segoe UI", "Helvetica Neue", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 10% 0%, #fdfcf6 0%, #f4f6f3 48%),
+        linear-gradient(165deg, #f4f6f3 0%, #eaf0ea 100%);
+      line-height: 1.45;
+    }
+
+    header {
+      padding: 3rem 1.25rem 2rem;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(120deg, #f9fbf8 0%, #eef4ef 60%, #e7f0ea 100%);
+    }
+
+    .wrap {
+      max-width: 1080px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      margin: 0;
+      font-family: "Iowan Old Style", "Palatino Linotype", serif;
+      font-size: clamp(1.9rem, 3.6vw, 2.8rem);
+      letter-spacing: 0.01em;
+    }
+
+    .subtitle {
+      margin-top: 0.7rem;
+      color: var(--muted);
+      max-width: 70ch;
+      font-size: 1.04rem;
+    }
+
+    main {
+      padding: 1.25rem;
+      display: grid;
+      gap: 1rem;
+      max-width: 1080px;
+      margin: 0 auto 2.5rem;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .card h2 {
+      margin: 0;
+      padding: 1rem 1.15rem;
+      font-size: 1.2rem;
+      border-bottom: 1px solid var(--line);
+      background: #fbfcfa;
+    }
+
+    .card .content {
+      padding: 1rem 1.15rem 1.15rem;
+    }
+
+    .grid {
+      display: grid;
+      gap: 0.8rem;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .pill {
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      padding: 0.8rem;
+      background: #fcfdfc;
+    }
+
+    .pill strong {
+      display: block;
+      margin-bottom: 0.2rem;
+      font-size: 0.92rem;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .note {
+      margin-top: 0.8rem;
+      padding: 0.75rem 0.85rem;
+      background: var(--accent-soft);
+      border: 1px solid #c7e1d3;
+      border-radius: 10px;
+      color: #184f35;
+      font-size: 0.95rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.95rem;
+    }
+
+    th, td {
+      text-align: left;
+      vertical-align: top;
+      padding: 0.72rem 0.6rem;
+      border-bottom: 1px solid var(--line);
+    }
+
+    th {
+      background: #f8faf8;
+      font-size: 0.82rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: #42524b;
+    }
+
+    code {
+      font-family: "SF Mono", Menlo, Consolas, monospace;
+      font-size: 0.88em;
+      background: #eef2ef;
+      border: 1px solid #dbe3db;
+      border-radius: 4px;
+      padding: 0.08rem 0.28rem;
+    }
+
+    .warn {
+      margin-top: 0.8rem;
+      padding: 0.75rem 0.85rem;
+      background: var(--warn-soft);
+      border: 1px solid #f2cdb8;
+      border-radius: 10px;
+      color: #7c2f08;
+      font-size: 0.95rem;
+    }
+
+    ul { margin: 0.45rem 0 0; padding-left: 1.05rem; }
+    li + li { margin-top: 0.3rem; }
+
+    footer {
+      max-width: 1080px;
+      margin: 0 auto 2rem;
+      padding: 0 1.25rem;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 900px) {
+      .grid { grid-template-columns: 1fr; }
+      table { display: block; overflow-x: auto; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <h1>Suspicion Scoring Reference</h1>
+      <p class="subtitle">
+        This page documents every output value produced by the suspicion analyzer and explains how each value affects
+        <code>SuspicionScore</code>. The goal is to identify patterns consistent with handicap manipulation (sandbagging),
+        especially when performance changes by context (tournament vs casual), posting behavior, and round composition.
+      </p>
+    </div>
+  </header>
+
+  <main>
+    <section class="card">
+      <h2>How The Score Works</h2>
+      <div class="content">
+        <div class="grid">
+          <div class="pill">
+            <strong>Additive Signals</strong>
+            Each suspicious pattern contributes points. Larger and more repeatable anomalies add more.
+          </div>
+          <div class="pill">
+            <strong>Context Checks</strong>
+            Many rules require both tournament and casual samples so one mode can be compared against the other.
+          </div>
+          <div class="pill">
+            <strong>Sample Guard</strong>
+            If tournament rounds are fewer than 3, final score is multiplied by <code>0.65</code>.
+          </div>
+        </div>
+        <p class="note">
+          Why this helps: sandbagging is rarely visible from one metric alone. Reliable detection comes from converging
+          signals: strategic underperformance, selective posting behavior, and context-dependent scoring gaps.
+        </p>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Result Values: Meaning, Score Impact, Sandbagging Rationale</h2>
+      <div class="content">
+        <table>
+          <thead>
+            <tr>
+              <th>Output Value</th>
+              <th>What It Means</th>
+              <th>How It Affects Suspicion Score</th>
+              <th>Why It Helps Identify Sandbaggers</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>Golfer Name</code> (<code>FirstName LastName</code>)</td>
+              <td>Display name for each analyzed golfer, derived from the source filename convention.</td>
+              <td>No direct points.</td>
+              <td>Makes suspicious profiles immediately actionable for committee review without cross-referencing IDs.</td>
+            </tr>
+            <tr>
+              <td><code>GolferID</code></td>
+              <td>Unique golfer identifier.</td>
+              <td>No direct points.</td>
+              <td>Tracking and attribution only.</td>
+            </tr>
+            <tr>
+              <td><code>Rounds Analyzed (Total / Casual / Tournament)</code></td>
+              <td>How many validated rounds were included in each context bucket for that golfer.</td>
+              <td>Indirect impact. Several tests require minimum tournament/casual sample sizes and low tournament sample scales the final score by <code>0.65</code>.</td>
+              <td>Prevents overconfidence from tiny datasets and clarifies how strong the evidence base is.</td>
+            </tr>
+            <tr>
+              <td><code>Date Range Analyzed</code> (<code>RoundsStartDate</code> to <code>RoundsEndDate</code>)</td>
+              <td>Earliest to latest round date used in the analysis window for that golfer.</td>
+              <td>No direct points.</td>
+              <td>Shows whether suspicious signals are persistent over time or concentrated in a short period.</td>
+            </tr>
+            <tr>
+              <td><code>Handicap Index</code></td>
+              <td>Computed from most recent 20 rounds using WHS-style best-count logic.</td>
+              <td>Used as baseline in multiple tests (beat-rate and tournament-vs-index gap).</td>
+              <td>If actual event scoring often beats this baseline, index may be inflated.</td>
+            </tr>
+            <tr>
+              <td><code>Avg Diff</code>, <code>Avg Casual Diff</code>, <code>Avg Tournament Diff</code></td>
+              <td>Mean differential overall and by context.</td>
+              <td>Feeds context-gap rules. Tournament better than casual by:<br><code>&gt;=2.0</code> (+15), <code>&gt;=3.0</code> (+28), <code>&gt;=5.0</code> (+45).</td>
+              <td>Strong tournament outperformance relative to casual rounds is a primary manipulation pattern.</td>
+            </tr>
+            <tr>
+              <td><code>Tournament vs Casual Gap</code></td>
+              <td><code>AvgCasualDifferential - AvgTournamentDifferential</code>.</td>
+              <td>Directly drives the large context-gap scoring above.</td>
+              <td>Large positive gap indicates performance “switching on” when stakes matter.</td>
+            </tr>
+            <tr>
+              <td><code>Tournament vs Handicap Gap</code></td>
+              <td><code>HandicapIndex - AvgTournamentDifferential</code>.</td>
+              <td><code>&gt;=2.5</code> (+20), <code>&gt;=4.0</code> (+35).</td>
+              <td>If tournament results are consistently much better than index, index may not represent true ability.</td>
+            </tr>
+            <tr>
+              <td><code>Low Round Frequency (beat HI) Overall/Casual/Tournament</code></td>
+              <td>How often differentials are lower (better) than current handicap index.</td>
+              <td>Tournament beat-rate: <code>&gt;=50%</code> (+15), <code>&gt;=70%</code> (+25).<br>Overall beat-rate (if 12+ rounds): <code>&gt;=35%</code> (+5), <code>&gt;=45%</code> (+10).</td>
+              <td>Typical golfers beat index less frequently; unusually high beat-rate can indicate inflated handicap.</td>
+            </tr>
+            <tr>
+              <td><code>Best8 vs Remaining Diff Gap</code></td>
+              <td>Difference between average of best 8 and remaining rounds from the most recent 20 rounds.</td>
+              <td><code>&gt;4.5</code> (+12), <code>&gt;6.0</code> (+20).</td>
+              <td>Large spread can indicate intentional “bad” rounds mixed with very strong scoring.</td>
+            </tr>
+            <tr>
+              <td><code>Distribution Skew (All/T/C)</code> and <code>Skew Gap</code></td>
+              <td>Skewness of differential distributions overall, tournament, casual, plus casual-minus-tournament gap.</td>
+              <td>Skew gap: <code>&gt;=0.75</code> (+6), <code>&gt;=1.10</code> (+10).<br>Tournament skew left-heavy: <code>&lt;=-0.60</code> (+4), <code>&lt;=-0.90</code> (+8).</td>
+              <td>Helps detect distribution shape anomalies, not just averages (e.g., clusters of very low tournament differentials).</td>
+            </tr>
+            <tr>
+              <td><code>Handicap Trajectory Samples/Patterns</code> and <code>Rise/Drop Avg</code></td>
+              <td>Time-series check: handicap trend rising before tournaments and dropping after.</td>
+              <td>If repeated and strong:<br><code>PatternRate&gt;=0.60</code>, 2+ patterns, rise/drop <code>&gt;=0.80</code> (+18).<br>Moderate: <code>PatternRate&gt;=0.40</code>, 2+ patterns, rise/drop <code>&gt;=0.50</code> (+10).</td>
+              <td>Targets timing behavior where index inflates ahead of events and normalizes after.</td>
+            </tr>
+            <tr>
+              <td><code>Avg Blowup Holes (overall/tournament/casual)</code> and <code>Blowup Gap</code></td>
+              <td>Blow-up holes are <code>raw - par &gt;= 3</code>. Gap compares casual vs tournament.</td>
+              <td>Gap: <code>&gt;=0.8</code> (+10), <code>&gt;=1.5</code> (+18).</td>
+              <td>Many more casual blow-ups than tournament blow-ups can signal selective underperformance.</td>
+            </tr>
+            <tr>
+              <td><code>Blow-Up Round Pattern Rate Overall/Casual/Tournament</code></td>
+              <td>Rounds with 1–2 severe blow-up holes while remaining holes are near scratch pace.</td>
+              <td>Overall pattern rate: <code>&gt;=20%</code> with 3+ rounds (+8), <code>&gt;=30%</code> with 4+ rounds (+14).<br>Casual-vs-tournament gap: <code>&gt;=0.15</code> (+5), <code>&gt;=0.25</code> (+10).</td>
+              <td>Captures deliberate round “spoiling” behavior without overall poor play.</td>
+            </tr>
+            <tr>
+              <td><code>Avg Posting Delay Days</code>, <code>Late Post Count</code>, <code>Late Post Rate</code>, <code>Late Post Rate Casual/Tournament</code>, <code>Late Post Rate Gap</code></td>
+              <td>Measures timeliness and context bias in score posting. “Late” means 7+ days.</td>
+              <td>High late rate: +8 to +15.<br>High delay average: +4 to +8.<br>Casual-tournament late-rate gap: +5 to +10.</td>
+              <td>Delayed or selective posting patterns are common in index manipulation workflows.</td>
+            </tr>
+            <tr>
+              <td><code>PlayedAt Day-of-Month Distribution (1-31)</code></td>
+              <td>ASCII histogram shown by month. Each month has a fixed 31-character day row, where each position represents day 1..31, and each row ends with that month’s total in parentheses (example: <code>(8)</code>). Symbol legend: space = 0 rounds, <code>1..9</code> = count for that day, <code>+</code> = 10+ rounds on that day.</td>
+              <td>No direct points currently; diagnostic context only.</td>
+              <td>Helps spot temporal posting/play clustering patterns (for example, repeated concentration on specific day numbers) that may support or challenge other suspicious signals.</td>
+            </tr>
+            <tr>
+              <td><code>Suspicion Score</code></td>
+              <td>Total weighted score from all triggered rules.</td>
+              <td>Higher = more suspicious pattern density/severity.</td>
+              <td>Aggregates weak and strong signals into one ranking number for triage.</td>
+            </tr>
+            <tr>
+              <td><code>Flags</code></td>
+              <td>Human-readable reasons for every score contribution and sampling caveat.</td>
+              <td>No extra points by itself; reflects score logic outcomes.</td>
+              <td>Provides auditability and explains why a golfer ranked high.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="warn">
+          Score interpretation note: this is a risk-screening model, not proof of intentional misconduct.
+          Always validate with round-level evidence, competition history, and local committee review.
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Current Rule Summary (Quick Reference)</h2>
+      <div class="content">
+        <ul>
+          <li>Large tournament-vs-casual differential gaps are the strongest weighted signal.</li>
+          <li>Tournament scoring far better than handicap index and high beat-index frequency materially increase suspicion.</li>
+          <li>Best-8-vs-rest variance, blow-up behavior, and trajectory timing patterns add corroborating evidence.</li>
+          <li>The PlayedAt histogram is a visual diagnostic for day-of-month clustering; it does not add score points by itself.</li>
+          <li>Posting-delay behavior is a secondary signal that strengthens pattern confidence.</li>
+          <li>Low tournament sample size reduces final score to avoid overconfidence on small data.</li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    Suspicion scoring documentation generated from the current <code>apps/suspicion/main.go</code> logic.
+  </footer>
+</body>
+</html>
