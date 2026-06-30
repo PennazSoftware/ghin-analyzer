@@ -277,3 +277,37 @@ module "api_gateway_enable_cors_ghin_api_golfers_id_handicaps" {
   api_resource_id = aws_api_gateway_resource.resource_crm_api_ghin_golfers_id_handicaps.id
   allow_headers = ["Authorization", "Content-Type", "X-Amz-Date", "X-Amz-Security-Token", "X-Api-Key", "environment"]
 }
+
+# /ghin/golfers/{id}/revisions
+resource "aws_api_gateway_resource" "resource_crm_api_ghin_golfers_id_revisions" {
+    rest_api_id = aws_api_gateway_rest_api.rest_api_ghin.id
+    parent_id = aws_api_gateway_resource.resource_crm_api_ghin_golfers_id.id
+    path_part = "revisions"
+}
+
+resource "aws_api_gateway_method" "method_golfers_get_id_revisions" {
+    rest_api_id = aws_api_gateway_rest_api.rest_api_ghin.id
+    resource_id = aws_api_gateway_resource.resource_crm_api_ghin_golfers_id_revisions.id
+    http_method = "GET"
+    authorization = "NONE"
+    api_key_required = true
+}
+
+resource "aws_api_gateway_integration" "integration_golfers_get_id_revisions" {
+    rest_api_id = aws_api_gateway_rest_api.rest_api_ghin.id
+    resource_id = aws_api_gateway_resource.resource_crm_api_ghin_golfers_id_revisions.id
+    http_method = aws_api_gateway_method.method_golfers_get_id_revisions.http_method
+    # POST is needed for lambda integrations. See Lambda Proxy example https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/api_gateway_integration
+    integration_http_method = "POST"
+    type = "AWS_PROXY"
+    uri = aws_lambda_function.lambda_ghin_api[count.index].invoke_arn
+    count = terraform.workspace == "prod" ? 1 : 0
+}
+
+module "api_gateway_enable_cors_ghin_api_golfers_id_revisions" {
+  source  = "squidfunk/api-gateway-enable-cors/aws"
+  version = "0.3.3"
+  api_id          = aws_api_gateway_rest_api.rest_api_ghin.id
+  api_resource_id = aws_api_gateway_resource.resource_crm_api_ghin_golfers_id_revisions.id
+  allow_headers = ["Authorization", "Content-Type", "X-Amz-Date", "X-Amz-Security-Token", "X-Api-Key", "environment"]
+}

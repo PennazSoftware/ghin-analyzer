@@ -47,6 +47,13 @@ func ProcessSubRoute(request events.APIGatewayProxyRequest, environment string, 
 		default:
 			return apiutil.GetErrorResponse(http.StatusMethodNotAllowed, fmt.Sprintf("the requested method (%s) is not allowed for %s", request.HTTPMethod, resource))
 		}
+	case "/ghin/golfers/{id}/revisions":
+		switch request.HTTPMethod {
+		case "GET":
+			r, _ = getGolferRevisions(request, requestID, ghinClient, cacheClient)
+		default:
+			return apiutil.GetErrorResponse(http.StatusMethodNotAllowed, fmt.Sprintf("the requested method (%s) is not allowed for %s", request.HTTPMethod, resource))
+		}
 	default:
 		return apiutil.GetErrorResponse(http.StatusBadRequest, fmt.Sprintf("the request is invalid for %s", resource))
 	}

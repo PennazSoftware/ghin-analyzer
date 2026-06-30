@@ -57,3 +57,9 @@ type GolferResponse struct {
 	ResponseBase
 	Golfer ghin.Golfer `json:"golfer"`
 }
+
+// RevisionsResponse is the response returned from a call to retrieve a golfer's handicap revision history
+type RevisionsResponse struct {
+	ResponseBase
+	Revisions []ghin.Revision `json:"revisions,omitempty"`
+}
